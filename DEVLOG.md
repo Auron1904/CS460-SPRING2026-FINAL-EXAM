@@ -3,28 +3,17 @@
 **Student Name:** AARON TIMBANG
 **Student ID:** 133228183
 
-> Instructions: Write at least four dated entries. Required entry types are marked below.
-> Two to five sentences per entry is sufficient. Write entries as you go, not all in one
-> sitting. Graders check that entries reflect genuine work across multiple sessions.
-> Delete all blockquotes before submitting.
-
 ---
 
 ## Entry 1 – [11MAY2026]: Initial Plan
 
-> Required. Write this before writing any code. Describe your plan: what you will
-> implement first, what parts you expect to be difficult, and how you plan to test.
-
-_Your entry here._
-I plan on implementing run_dijkstra() function first, that way I get a refresher on core concepts and can test immediatley if my shortest path implementation actually works. From an intial pov I think verifying both find_optimal_route() and explore() will be the most challenging. To test I will probably set breakpoints from initial call to each function and step through each line to verify everything is working as intended. 
+_I plan on implementing`run_dijkstra()` function first, that way I get a refresher on core concepts and can test immediatley if my shortest path implementation actually works. From an intial pov I think verifying both `find_optimal_route()` and explore() will be the most challenging. To test I will probably set breakpoints from initial call to each function and step through each line to verify everything is working as intended._
+ 
 ---
 
-## Entry 2 – [Date]: [Short description]
+## Entry 2 – [13MAY2026]: [Wrong Source Set]
 
-> Required. At least one entry must describe a bug, wrong assumption, or design change
-> you encountered. Describe what went wrong and how you resolved it.
-
-_Your entry here._
+_First version of `select_sources` included the exit T as a source, which doesn't break correctness but wastes a full Dijkstra run. Re-read the spec: the exit is only a destination, never a starting point. Fixed it to return only spawn + relics._
 
 ---
 
@@ -34,27 +23,22 @@ _Your entry here._
 
 ---
 
-## Entry 4 – [Date]: Post-Implementation Reflection
+## Entry 4 – [14MAY2026]: Post-Implementation Reflection
 
-> Required. Written after your implementation is complete. Describe what you would
-> change or improve given more time.
-
-_Your entry here._
+_With more time I'd add memoization on `(current_loc, frozenset(relics_remaining))` so the search doesn't re-explore states it's already seen. That alone would make the algorithm scale to way more relics without changing the rest of the code._
 
 ---
 
 ## Final Entry – [Date]: Time Estimate
 
-> Required. Estimate minutes spent per part. Honesty is expected; accuracy is not graded.
-
 | Part | Estimated Hours |
 |---|---|
-| Part 1: Problem Analysis | |
-| Part 2: Precomputation Design | |
-| Part 3: Algorithm Correctness | |
-| Part 4: Search Design | |
-| Part 5: State and Search Space | |
-| Part 6: Pruning | |
-| Part 7: Implementation | |
-| README and DEVLOG writing | |
-| **Total** | |
+| Part 1: Problem Analysis | 1 |
+| Part 2: Precomputation Design | 1 |
+| Part 3: Algorithm Correctness | 2 |
+| Part 4: Search Design | 1 |
+| Part 5: State and Search Space | 1 |
+| Part 6: Pruning | 2 |
+| Part 7: Implementation | 3 |
+| README and DEVLOG writing | 2 |
+| **Total** | 13 |

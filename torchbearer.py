@@ -2,8 +2,8 @@
 CS 460 – Algorithms: Final Programming Assignment
 The Torchbearer
 
-Student Name: ___________________________
-Student ID:   ___________________________
+Student Name: AARON TIMBANG
+Student ID:   133228183
 
 INSTRUCTIONS
 ------------
@@ -25,16 +25,12 @@ import heapq
 # =============================================================================
 
 def explain_problem():
-    """
-    Returns
-    -------
-    str
-        Your Part 1 README answers, written as a string.
-        Must match what you wrote in README Part 1.
+    return (
+        "1. While we can just run Dijkstra from S it will only return the cheapest path from S to every other node; we do not keep track of collection order or consider shortest exit from current vertex to exit node-T\n"
+        "2. The only decision left is what order to visit the relics."
+        "3. Total fuel is also reliant on the sequence of inter-location edges taken, so finding the minimum requires comparing across different order traversals rather than computing a single value."
 
-    TODO
-    """
-    return "TODO"
+    )
 
 
 # =============================================================================
@@ -54,9 +50,11 @@ def select_sources(spawn, relics, exit_node):
     list[node]
         No duplicates. Order does not matter.
 
-    TODO
+    
     """
-    pass
+    sources = set(relics)
+    sources.add(spawn)
+    return list(sources)
 
 
 def run_dijkstra(graph, source):
@@ -73,9 +71,27 @@ def run_dijkstra(graph, source):
         Minimum cost from source to every node in graph.
         Unreachable nodes map to float('inf').
 
-    TODO
     """
-    pass
+    # Source = 0, all other nodes = inf
+    dist = {v: float('inf') for v in graph}
+    dist[source] = 0
+
+    # minHeap (dist, node)
+    pq = [(0, source)]
+
+    while pq:
+        d, u = heapq.heappop(pq)
+
+        if d > dist[u]:
+            continue
+
+        for v, w in graph[u]:
+            new_dist = d + w
+            if new_dist < dist[v]:
+                dist[v] = new_dist
+                heapq.heappush(pq, (new_dist, v))
+
+    return dist
 
 
 def precompute_distances(graph, spawn, relics, exit_node):
@@ -93,9 +109,12 @@ def precompute_distances(graph, spawn, relics, exit_node):
         Nested structure supporting dist_table[u][v] lookups
         for every source u your design requires.
 
-    TODO
     """
-    pass
+    sources = select_sources(spawn, relics, exit_node)
+    dist_table = {}
+    for src in sources:
+        dist_table[src] = run_dijkstra(graph, src)
+    return dist_table
 
 
 # =============================================================================
@@ -103,16 +122,14 @@ def precompute_distances(graph, spawn, relics, exit_node):
 # =============================================================================
 
 def dijkstra_invariant_check():
-    """
-    Returns
-    -------
-    str
-        Your Part 3 README answers, written as a string.
-        Must match what you wrote in README Part 3.
-
-    TODO
-    """
-    return "TODO"
+    return (
+        "3a-1. Their stored distance is the proven shortest-path distance from the source S; other paths have already been provden to be greater than nodes stored in S."
+        "3a-2. Their stored distance is the cheapest path *yet discovered* from S; a strictly shorter route may still be found once more nodes join S."
+        "3b-1. S is empty so the finalized clause is vacuously true; dist[x]=0 and every other dist=infinity correctly shows no path through S has been found yet."
+        "3b-2. Any alternative path to u must exit S at some first non-S node y, where dist[y] is at most the cost to reach y. Since u was picked as the minimum, dist[u] ≤ dist[y], and nonnegative edge weights mean the rest of the path can only add cost, so no alternative beats dist[u]."
+        "3b-3. Once the priority queue empties, every reachable node is finalized, so dist[v] holds the true shortest distance and unreachable nodes stay at infinity."
+        "3c. f any dist-table entry is wrong, the order-search compares incorrect tour costs and can pick a suboptimal (or unreachable) ordering as 'optimal' wasting the Torchbearer's fuel."
+    )
 
 
 # =============================================================================
@@ -120,16 +137,14 @@ def dijkstra_invariant_check():
 # =============================================================================
 
 def explain_search():
-    """
-    Returns
-    -------
-    str
-        Your Part 4 README answers, written as a string.
-        Must match what you wrote in README Part 4.
-
-    TODO
-    """
-    return "TODO"
+    return (
+        "4-1. Greedy picks the cheapest next edge but ignores how that choice forces expensive later edges; a small saving now can lock in a big penalty later."
+        "4-2. dist(S→B)=1, dist(S→C)=10, dist(B→C)=100, dist(C→B)=1, dist(B→T)=50, dist(C→T)=1, with relics {B, C}."
+        "4-3. S→B→C→T = 1 + 100 + 1 = 102"
+        "4-4. S→C→B→T = 10 + 1 + 50 = 61"
+        "4-5. Saving 9 fuel on the first hop locked in a 100-fuel second hop; the optimal tour paid more up front to unlock cheap downstream legs."
+        "4-6. Every possible order in which the relics can be visited, since total fuel depends on which inter-relic legs get chained together and different orders produce different sums."
+    )
 
 
 # =============================================================================
@@ -154,9 +169,21 @@ def find_optimal_route(dist_table, spawn, relics, exit_node):
         (minimum_fuel_cost, ordered_relic_list)
         Returns (float('inf'), []) if no valid route exists.
 
-    TODO
     """
-    pass
+    if not relics:
+        direct_cost = dist_table[spawn].get(exit_node, float('inf'))
+        if direct_cost == float('inf'):
+            return (float('inf'), [])
+        return (direct_cost, [])
+    
+    best = [float('inf'), []]
+
+    _explore(dist_table=dist_table, current_loc=spawn, relics_remaining=set(relics),
+             relics_visited_order=[], cost_so_far=0.0, exit_node=exit_node, best=best)
+    
+    if best[0] == float('inf'):
+        return (float('inf'), [])
+    return (best[0], best[1])
 
 
 def _explore(dist_table, current_loc, relics_remaining, relics_visited_order,
@@ -181,14 +208,57 @@ def _explore(dist_table, current_loc, relics_remaining, relics_visited_order,
     None
         Updates best in place.
 
-    TODO
+    
     Implement: base case, pruning, recursive case, backtracking.
 
     REQUIRED: Add a 1-2 sentence comment near your pruning condition
     explaining why it is safe (cannot skip the optimal solution).
     This comment is graded.
     """
-    pass
+    if not relics_remaining:
+        finish_cost = dist_table[current_loc].get(exit_node, float('inf'))
+        total = cost_so_far + finish_cost
+        if total < best[0]:
+            best[0] = total
+            best[1] = list(relics_visited_order)
+        return
+    
+
+    # *** REQUIRED COMMENT ***
+    # dist_table[current_loc][exit_node] is the cheapest path to the exit, and every
+    # tour must end there. Nonnegative weights mean detouring through remaining
+    # relics can only add cost, so cost_so_far + lower_bound is at most the true
+    # completion cost. If that sum already >= best[0], every completion of this
+    # branch is at least as bad as the current best, so pruning is safe.
+
+    lower_bound = dist_table[current_loc].get(exit_node, float('inf'))
+    if cost_so_far + lower_bound >= best[0]:
+        return
+    
+    #RECUSRIVE CASE
+    for next_relic in list(relics_remaining):
+        leg_cost = dist_table[current_loc].get(next_relic, float('inf'))
+        if leg_cost == float('inf'):
+            continue
+
+        new_cost = cost_so_far + leg_cost
+        if new_cost >= best[0]:
+            continue
+
+        relics_remaining.discard(next_relic)
+        relics_visited_order.append(next_relic)
+
+        _explore(dist_table=dist_table,
+                 current_loc=next_relic,
+                 relics_remaining=relics_remaining,
+                 relics_visited_order=relics_visited_order,
+                 cost_so_far=new_cost,
+                 exit_node=exit_node,
+                 best = best)
+        
+        relics_visited_order.pop()
+        relics_remaining.add(next_relic)
+        
 
 
 # =============================================================================
@@ -210,9 +280,10 @@ def solve(graph, spawn, relics, exit_node):
         (minimum_fuel_cost, ordered_relic_list)
         Returns (float('inf'), []) if no valid route exists.
 
-    TODO
+    
     """
-    pass
+    dist_table = precompute_distances(graph, spawn, relics, exit_node)
+    return find_optimal_route(dist_table, spawn, relics, exit_node)
 
 
 # =============================================================================
